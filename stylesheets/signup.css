@@ -1,0 +1,35 @@
+#header
+{
+ 	text-align: center;
+ 	color: black;
+}
+#header:visited
+{
+	color: black;
+}
+
+#tablu
+{
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#bottom_button
+{
+	margin-left: auto;
+	margin-right: auto;
+	text-align: center;
+}
+
+#bottom_button_itself
+{
+	width: 104px; 
+	height: 40px; 
+	border: 1px solid; 
+	border-radius: 6px;
+}
+
+#bottom_button_itself:active
+{
+	background: gray;
+}

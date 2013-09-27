@@ -1,0 +1,59 @@
+#titlebar{
+	text-align: center;
+}
+
+#mainarea{
+	align: left;
+	width: 750px;
+	margin-left: auto;
+	margin-right: auto;
+	border: 1px solid;
+	border-radius: 3px 15px 3px 15px;
+	box-shadow: 10px 10px 7px;
+	background: white;
+	padding: 5px;
+}
+
+.head{
+
+}
+
+.content{
+
+}
+
+#title{
+	color: black;
+	text-align: center;
+}
+
+#title:visited{
+	color: black;
+}
+
+
+body{
+	
+	left: auto;
+	right: auto;
+	font: Arial;
+	background: #1C6BA0;
+}
+
+#queried{
+	
+	right: 0px;
+	bottom: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	text-align: right;
+}
+
+#username{
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	margin-right: 15px;
+	margin-top: 5px;
+	text-align: right;
+}

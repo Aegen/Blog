@@ -1,0 +1,31 @@
+#titlebar{
+
+}
+
+#mainarea{
+	/*align: center;
+	margin-left: auto;
+	margin-right: auto;*/
+}
+
+.head{
+
+}
+
+.content{
+
+}
+
+.queried{
+	position: absolute;
+	right: 0;
+	bottom: 0;
+}
+
+body{
+	/*position: absolute;
+	text-align: center;
+	left: auto;
+	right: auto;
+	font: Arial;*/
+}

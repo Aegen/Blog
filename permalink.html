@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<head>
+	<link rel="stylesheet" href='/stylesheets/hello.css'>
+</head>
+
+<body>
+	<form method = 'post'>
+		<a id = 'title' href = "/"><h1>Jon's Blog</h1></a>
+
+		<hr width="80%">
+
+		<div id = 'mainarea'>
+			<h3 class = "head">{{hord.title}}</h3>
+
+			<hr width="100%">
+
+			<p class = "content">{{hord.content}}</p>
+		</div>
+
+		<p id = 'queried'>Queried {{timedif}} seconds ago</p>
+	</form>
+</body>
