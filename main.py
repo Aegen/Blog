@@ -42,9 +42,10 @@ class MainHandler(webapp2.RequestHandler):
         temp = memcache.get('maincache')
 
         userorlogin = None
-        usercookie = Stat.eschtml( self.request.cookies.get('user'))
+        usercookie =  self.request.cookies.get('user')
         
         if usercookie:
+            usercookie = Stat.eschtml(usercookie)
             userorlogin = '<b><span id = "username">%s[<a style = "color: gray;" href = "/logout">Logout</a>]</span></b>' % usercookie
         else:
             userorlogin = '<b><a style = "color: #565051;" id = "username" href = "/login">Login</a></b>'
@@ -303,7 +304,8 @@ class LoginHandler(webapp2.RequestHandler):
 class FlushHandler(webapp2.RequestHandler):
 
     def get(self):
-        memcache.flush_all()
+        if Stat.isLoggedIn(self.request.cookies.get('user')):
+            memcache.flush_all()
         self.redirect('/')
 
 class LogoutHandler(webapp2.RequestHandler):

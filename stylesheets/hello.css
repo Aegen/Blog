@@ -37,7 +37,7 @@ body{
 	left: auto;
 	right: auto;
 	font: Arial;
-	background: #1C6BA0;
+	background: #F6F4F0;
 }
 
 #queried{
@@ -47,6 +47,7 @@ body{
 	margin-right: 0px;
 	margin-bottom: 0px;
 	text-align: right;
+	
 }
 
 #username{
