@@ -32,8 +32,9 @@ from google.appengine.ext import ndb
 
 
 JINJA_ENVIRONMENT = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
-    extensions=['jinja2.ext.autoescape'])
+        loader=jinja2.FileSystemLoader(os.path.dirname(__file__)), 
+        extensions=['jinja2.ext.autoescape']
+    )
 
 
 class MainHandler(webapp2.RequestHandler):
@@ -133,9 +134,10 @@ class NewPostHandler(webapp2.RequestHandler):
 
         if tit and cont:
     
-            temp = Store(title = Stat.eschtml(tit), content = Stat.eschtml(cont))
+            temp = Store(title = Stat.eschtml(tit), content = Stat.eschtml(cont), ip_address = self.request.remote_addr)
             if self.request.cookies.get('user'):
                 temp.creator = Stat.eschtml(self.request.cookies.get('user'))
+
             temp.put()
             memcache.delete('maintime')
             memcache.delete('maincache')
@@ -180,8 +182,6 @@ class Permalink(webapp2.RequestHandler):
 
         timedif = (datetime.datetime.now() - outer).total_seconds()
 
-
-        
 
         if s:
             self.response.write(JINJA_ENVIRONMENT.get_template('permalink.html').render({'hord': s, 'timedif': timedif}))
@@ -288,7 +288,6 @@ class LoginHandler(webapp2.RequestHandler):
         outp = Users.query(Users.username == str(user)).get()
 
         
-
         if outp and Stat.hashpass(str(user), str(passw), outp.salt).split(",")[0] == outp.hashedPass and outp.username == user:
             self.response.headers.add_header('Set-Cookie', 'user=%s; Path=/' % Stat.eschtml(str(user)))
             tempCode = Stat.salt()
@@ -299,14 +298,6 @@ class LoginHandler(webapp2.RequestHandler):
             self.response.write(JINJA_ENVIRONMENT.get_template('login.html').render())
 
 
-
-
-class FlushHandler(webapp2.RequestHandler):
-
-    def get(self):
-        if Stat.isLoggedIn(self.request.cookies.get('user')):
-            memcache.flush_all()
-        self.redirect('/')
 
 class LogoutHandler(webapp2.RequestHandler):
 
@@ -325,6 +316,7 @@ class Users(ndb.Model):
     hashedPass = ndb.StringProperty(required = True)
     salt = ndb.StringProperty(required = True)
     email = ndb.StringProperty()
+    created = ndb.DateTimeProperty(auto_now_add = True)
 
 
 
@@ -334,6 +326,7 @@ class Store(ndb.Model):
     content = ndb.TextProperty(required = True)
     created = ndb.DateTimeProperty(auto_now_add = True)
     creator = ndb.StringProperty()
+    ip_address = ndb.StringProperty()
 
 
 
@@ -345,6 +338,5 @@ app = webapp2.WSGIApplication([
     ('/login', LoginHandler),
     ('/logout', LogoutHandler),
     ('/.json', MainJsonHandler),
-    ('/[0-9]+\.json', PermaJson),
-    ('/flush', FlushHandler)
+    ('/[0-9]+\.json', PermaJson)
 ], debug=True)

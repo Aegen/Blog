@@ -19,12 +19,23 @@
 #subject_field
 {
 	width: 350px;
+	height: 18px;
+
+	border-radius: 4px;
+
+	resize: none;
+
+	overflow: hidden;
 }
 
 #content_field
 {
 	width: 350px; 
 	height: 175px;
+
+	border-radius: 4px;
+
+	resize: none;
 }
 
 #bottom_button

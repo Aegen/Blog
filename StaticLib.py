@@ -2,19 +2,19 @@ import cgi
 import string
 import random
 import hashlib
-import memcache
+from google.appengine.api import memcache
 
-#@staticmethod
+
 def eschtml( s):
 
     return cgi.escape(s)
 
-#@staticmethod
+
 def salt():
 
     return ''.join(random.choice(string.letters + string.digits) for x in xrange(16))
 
-#@staticmethod
+
 def hashpass( user, passw, sal = None):
 
     if sal == None:
@@ -26,6 +26,7 @@ def hashpass( user, passw, sal = None):
 
 
 def isLoggedIn(username):
+    
     if memcache.get(username + '_session_code'):
         return True
     else:
