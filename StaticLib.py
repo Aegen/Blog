@@ -5,7 +5,7 @@ import hashlib
 from google.appengine.api import memcache
 
 
-def eschtml( s):
+def eschtml( s ):
 
     return cgi.escape(s)
 
@@ -15,7 +15,7 @@ def salt():
     return ''.join(random.choice(string.letters + string.digits) for x in xrange(16))
 
 
-def hashpass( user, passw, sal = None):
+def hashpass( user, passw, sal = None ):
 
     if sal == None:
         sal = salt()
@@ -25,7 +25,7 @@ def hashpass( user, passw, sal = None):
     return str(has) + "," + sal
 
 
-def isLoggedIn(username):
+def isLoggedIn( username ):
     
     if memcache.get(username + '_session_code'):
         return True

@@ -24,6 +24,7 @@ import string
 import json
 import datetime
 import StaticLib as Stat
+import DBClasses as DBC
 
 from google.appengine.api import memcache
 from google.appengine.ext import ndb
@@ -40,47 +41,74 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 class MainHandler(webapp2.RequestHandler):
 
     def get(self):
+
         temp = memcache.get('maincache')
 
         userorlogin = None
         usercookie =  self.request.cookies.get('user')
         
         if usercookie:
-            usercookie = Stat.eschtml(usercookie)
+            usercookie  = Stat.eschtml(usercookie)
             userorlogin = '<b><span id = "username">%s[<a style = "color: gray;" href = "/logout">Logout</a>]</span></b>' % usercookie
         else:
             userorlogin = '<b><a style = "color: #565051;" id = "username" href = "/login">Login</a></b>'
 
-        entries =[]
-        intime = None
+        entries = []
+        links   = []
+        intime  = None
+        count = 0
+
         if temp is not None:
 
             intime = memcache.get('maintime')
+
             a = json.loads(temp)
 
+            links = memcache.get('bloglinks').split(",")
+
             for b in a:
-                temporary = Store()
+
+                temporary = DBC.Store()
                 temporary.content = b["content"]
                 temporary.title = b["title"]
                 temporary.created = datetime.datetime.strptime(b["created"], "%Y-%m-%d %H:%M:%S.%f")
+                
                 entries.append(temporary)
+            count = len(entries)
         else:
 
-            entries = Store.query().order(-Store.created)
+            entries = DBC.Store.query().order(-DBC.Store.created)
+            count = entries.count()
             outp = []
 
             for a in entries:
                 inp = {}
                 inp["content"] = a.content
-                inp["title"] = a.title
+                inp["title"]   = a.title
                 inp["created"] = str(a.created)
                 outp.append(inp)
+                links.append(str(a.key.id()))
 
+            
+            memcache.set('bloglinks', ','.join(links))
             memcache.set('maincache', json.dumps(outp))
             memcache.set('maintime', datetime.datetime.now())
 
             intime = datetime.datetime.now()
         
+        output = []
+        counter = 0
+        for x in entries:
+            temp = ContentTransfer()
+            temp.title = x.title
+            temp.content = x.content
+            temp.ip_address = x.ip_address
+            temp.creator = x.creator
+            temp.created = x.created
+            temp.key = '/' + links[counter]
+            counter += 1
+            output.append(temp)
+
         timedif = (datetime.datetime.now() - intime).total_seconds()
         timescale = 'seconds'
         if timedif >= 60 and  timescale == 'seconds':
@@ -94,7 +122,7 @@ class MainHandler(webapp2.RequestHandler):
             timescale = 'days'
 
         template = JINJA_ENVIRONMENT.get_template('layout.html')
-        self.response.write(template.render( {'entries': entries, 'timedif': timedif, 'timescale':timescale, 'userorlogin': userorlogin}))
+        self.response.write(template.render( {'output': output, 'links': links, 'timedif': timedif, 'timescale':timescale, 'userorlogin': userorlogin}))
 
     def post(self):
         self.redirect('/')
@@ -102,11 +130,10 @@ class MainHandler(webapp2.RequestHandler):
 
 
 
-
 class MainJsonHandler(webapp2.RequestHandler):
 
     def get(self):
-        entries = Store.query().order(-Store.created)
+        entries = DBC.Store.query().order(-DBC.Store.created)
         outp = []
         for a in entries:
             inp = {}
@@ -134,18 +161,18 @@ class NewPostHandler(webapp2.RequestHandler):
 
         if tit and cont:
     
-            temp = Store(title = Stat.eschtml(tit), content = Stat.eschtml(cont), ip_address = self.request.remote_addr)
+            temp = DBC.Store(title = Stat.eschtml(tit), content = Stat.eschtml(cont), ip_address = self.request.remote_addr)
             if self.request.cookies.get('user'):
                 temp.creator = Stat.eschtml(self.request.cookies.get('user'))
 
             temp.put()
             memcache.delete('maintime')
             memcache.delete('maincache')
+            memcache.delete('bloglinks')
 
             self.redirect("/" +str(temp.key.id()))
         else:
             self.response.write(JINJA_ENVIRONMENT.get_template('newpostpage.html').render())
-
 
 
 
@@ -165,12 +192,12 @@ class Permalink(webapp2.RequestHandler):
             outer = memcache.get(str(path) + "time")
             a = json.loads(temp)
 
-            s = Store()
+            s = DBC.Store()
             s.content = a["content"]
             s.title = a["title"]
             s.created = datetime.datetime.strptime(a["created"], "%Y-%m-%d %H:%M:%S.%f")
         else:
-            s = Store.get_by_id(path)
+            s = DBC.Store.get_by_id(path)
             if s:
                 tempo = {}
                 tempo["title"] = s.title
@@ -197,7 +224,7 @@ class PermaJson(webapp2.RequestHandler):
     def get(self):
         outer = self.request.path[1:len(self.request.path)].split('.')[0]
 
-        s = Store.get_by_id(int(outer))
+        s = DBC.Store.get_by_id(int(outer))
         inp = {}
         inp["content"] = s.content
         inp["title"] = s.title
@@ -206,6 +233,7 @@ class PermaJson(webapp2.RequestHandler):
         self.response.headers['Content-Type'] = 'application/json'
 
         self.response.write(json.dumps(inp))
+
 
 
 
@@ -218,13 +246,13 @@ class SignupHandler(webapp2.RequestHandler):
     def post(self):
 
         redirect = True
-        uerr = ''
-        perr = ''
+        uerr  = ''
+        perr  = ''
         vperr = ''
         emerr = ''
 
-        u = self.request.get('username')
-        p = self.request.get('password')
+        u  = self.request.get('username')
+        p  = self.request.get('password')
         vp = self.request.get('verify')
         em = self.request.get('email')
 
@@ -233,20 +261,20 @@ class SignupHandler(webapp2.RequestHandler):
         eRe = re.compile(r"^[\S]+@[\S]+\.[\S]+$")
 
         if not uRe.match(u):
-            uerr = 'username not valid'
+            uerr     = 'username not valid'
             redirect = False
 
         if not pRe.match(p):
-            perr = 'password not valid'
+            perr     = 'password not valid'
             redirect = False
 
         if not p == vp:
-            vperr = "passwords don't match"
+            vperr    = "passwords don't match"
             redirect = False
 
         if em:
             if not eRe.match(em):
-                emerr = 'email not valid'
+                emerr    = 'email not valid'
                 redirect = False
 
         if not redirect:
@@ -260,16 +288,15 @@ class SignupHandler(webapp2.RequestHandler):
 
             outs = Stat.hashpass(Stat.eschtml(str(u)), Stat.eschtml(str(p))).split(",")
             
-            temp = Users()
-            temp.username = Stat.eschtml(str(u))
+            temp            = DBC.Users()
+            temp.username   = Stat.eschtml(str(u))
             temp.hashedPass = outs[0]
-            temp.salt = outs[1]
+            temp.salt       = outs[1]
             if em:
-                temp.email = Stat.eschtml(em)
+                temp.email  = Stat.eschtml(em)
             temp.put()
             
             self.redirect('/')
-
 
 
 
@@ -285,7 +312,7 @@ class LoginHandler(webapp2.RequestHandler):
         user = self.request.get('username')
         passw = self.request.get('password')
 
-        outp = Users.query(Users.username == str(user)).get()
+        outp = DBC.Users.query(DBC.Users.username == str(user)).get()
 
         
         if outp and Stat.hashpass(str(user), str(passw), outp.salt).split(",")[0] == outp.hashedPass and outp.username == user:
@@ -310,23 +337,13 @@ class LogoutHandler(webapp2.RequestHandler):
 
 
 
-class Users(ndb.Model):
-
-    username = ndb.StringProperty(required = True)
-    hashedPass = ndb.StringProperty(required = True)
-    salt = ndb.StringProperty(required = True)
-    email = ndb.StringProperty()
-    created = ndb.DateTimeProperty(auto_now_add = True)
-
-
-
-class Store(ndb.Model):
-
-    title = ndb.StringProperty(required = True)
-    content = ndb.TextProperty(required = True)
-    created = ndb.DateTimeProperty(auto_now_add = True)
-    creator = ndb.StringProperty()
-    ip_address = ndb.StringProperty()
+class ContentTransfer():
+    title      = ''
+    content    = ''
+    created    = None
+    creator    = ''
+    ip_address = ''
+    key        = ''
 
 
 

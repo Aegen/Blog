@@ -15,7 +15,11 @@
 }
 
 .head{
+	color: black;
+}
 
+.head:visited{
+	color: black;
 }
 
 .content{

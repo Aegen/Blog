@@ -22,8 +22,8 @@
 		<hr WIDTH = "80%">
 
 		<div id = 'mainarea'>
-			{% for a in entries%}
-				<h3 class = "head">{{a.title}}</h3>
+			{% for a in output%}
+				<a class = "head" href = '{{a.key}}'><h3 class = "head">{{a.title}}</h3></a>
 
 				<hr WIDTH = "98%" >
 
