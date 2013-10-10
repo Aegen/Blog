@@ -209,12 +209,28 @@ class Permalink(webapp2.RequestHandler):
 
         timedif = (datetime.datetime.now() - outer).total_seconds()
 
+        outp = DBC.CommentStorage.query(DBC.CommentStorage.permakey == str(path)).order(-DBC.CommentStorage.created)
+
 
         if s:
-            self.response.write(JINJA_ENVIRONMENT.get_template('permalink.html').render({'hord': s, 'timedif': timedif}))
+            self.response.write(JINJA_ENVIRONMENT.get_template('permalink.html').render({'hord': s, 'timedif': timedif, 'comments': outp, 'loggedIn': Stat.isLoggedIn(self.request.cookies.get('user'))}))
 
     def post(self):
-        pass 
+        path    = self.request.path[1:len(self.request.path)]
+        content = self.request.get('content')
+
+        if content:
+            temp = DBC.CommentStorage()
+            temp.permakey = self.request.path[1:len(self.request.path)]
+            temp.username = self.request.cookies.get('user')
+            temp.content  = content
+            temp.ip_address = self.request.remote_addr
+            temp.put()
+
+        memcache.set('hello', 'hello')
+        memcache.delete('hello')
+
+        self.redirect('/' + path)
 
 
 
@@ -316,11 +332,17 @@ class LoginHandler(webapp2.RequestHandler):
 
         
         if outp and Stat.hashpass(str(user), str(passw), outp.salt).split(",")[0] == outp.hashedPass and outp.username == user:
+            
             self.response.headers.add_header('Set-Cookie', 'user=%s; Path=/' % Stat.eschtml(str(user)))
+            
             tempCode = Stat.salt()
+            
             self.response.headers.add_header('Set-Cookie', 'session_code = %s; Path=/' % tempCode)
+            
             memcache.set(str(user) + "_session_code", tempCode)
+            
             self.redirect('/')
+
         else:
             self.response.write(JINJA_ENVIRONMENT.get_template('login.html').render())
 
@@ -330,9 +352,12 @@ class LogoutHandler(webapp2.RequestHandler):
 
     def get(self):
         username = self.request.cookies.get('user')
+
         self.response.headers.add_header('Set-Cookie', 'user=%s; Path=/' % '')
         self.response.headers.add_header('Set-Cookie', 'session_code = %s; Path = /' % '')
+
         memcache.delete(username + '_session_code')
+
         self.redirect('/')
 
 

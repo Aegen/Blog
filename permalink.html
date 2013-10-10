@@ -18,6 +18,26 @@
 			<p class = "content">{{hord.content}}</p>
 		</div>
 
+		<div id = 'commentarea'>
+			{% if loggedIn == True %}
+				<h3><b>Comment:</b></h3>
+				<textarea id = 'content_field' name = 'content'></textarea>
+
+				<br>
+				<br>
+
+				<input id = 'bottom_button' type = 'submit' value="Post">
+			{% endif %}
+
+			{% for a in comments %}
+				<br>
+				<h4>From {{a.username}}</h4>
+				<hr width = '95%'>
+				<p>{{a.content}}</p>
+				<br>
+			{% endfor %}
+		</div>
+
 		<p id = 'queried'>Queried {{timedif}} seconds ago</p>
 	</form>
 </body>

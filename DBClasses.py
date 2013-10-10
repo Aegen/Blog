@@ -21,7 +21,9 @@ class Store(ndb.Model):
 
 
 class CommentStorage(ndb.Model):
-    username   = ndb.StringProperty(required = True)
-    created    = ndb.DateTimeProperty(auto_now_add = True)
-    content    = ndb.TextProperty(required = True)
+	
+    username = ndb.StringProperty(required = True)
+    permakey = ndb.StringProperty(required = True)
+    created = ndb.DateTimeProperty(auto_now_add = True)
+    content = ndb.TextProperty(required = True)
     ip_address = ndb.StringProperty()
