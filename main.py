@@ -23,6 +23,7 @@ import webapp2
 import string
 import json
 import datetime
+import time
 import StaticLib as Stat
 import DBClasses as DBC
 
@@ -227,8 +228,7 @@ class Permalink(webapp2.RequestHandler):
             temp.ip_address = self.request.remote_addr
             temp.put()
 
-        memcache.set('hello', 'hello')
-        memcache.delete('hello')
+        time.sleep(.1)
 
         self.redirect('/' + path)
 
